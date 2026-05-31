@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Results: {{ result.food_name }} — HealthBite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Analysis Results</h1>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="result-card {{ result.prediction.lower() }}">
+        <div class="result-header">
+            <div class="result-food-name">{{ result.food_name }}</div>
+            <p class="serving-subtitle">Based on {{ result.serving_size }}g serving</p>
+            <div class="result-badge {{ result.prediction.lower() }}">
+                <span class="badge-dot {{ result.prediction.lower() }}"></span>
+                {{ result.prediction | upper }}
+            </div>
+        </div>
+
+        <div class="confidence-bar">
+            <div class="conf-header">
+                <span class="conf-label">Ensemble Confidence</span>
+                <span class="conf-value">{{ result.confidence }}%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill {{ result.prediction.lower() }}"
+                     data-width="{{ result.confidence }}"></div>
+            </div>
+        </div>
+
+        <div class="macro-layout">
+            <div class="nutrition-grid">
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Calories</div>
+                    <div class="nutrition-value">{{ result.nutrition.calories }}<span class="nutrition-unit"> kcal</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Protein</div>
+                    <div class="nutrition-value">{{ result.nutrition.protein }}<span class="nutrition-unit">g</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Carbs</div>
+                    <div class="nutrition-value">{{ result.nutrition.carbs }}<span class="nutrition-unit">g</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Fat</div>
+                    <div class="nutrition-value">{{ result.nutrition.fat }}<span class="nutrition-unit">g</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Sugar</div>
+                    <div class="nutrition-value">{{ result.nutrition.sugar }}<span class="nutrition-unit">g</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Sodium</div>
+                    <div class="nutrition-value">{{ result.nutrition.sodium }}<span class="nutrition-unit">mg</span></div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-label">Sat. Fat</div>
+                    <div class="nutrition-value">{{ result.nutrition.saturated_fat }}<span class="nutrition-unit">g</span></div>
+                </div>
+            </div>
+            <div class="chart-container" style="position: relative; height:240px; width:100%; max-width: 300px; margin: 32px auto 20px;">
+                <canvas id="macroChart"></canvas>
+            </div>
+        </div>
+
+        <div class="model-voting">
+            <div class="model-voting-title">Model Voting Breakdown</div>
+            <div class="model-rows">
+                {% for m in result.individual_models %}
+                <div class="model-row">
+                    <span class="model-name">{{ m.label }}</span>
+                    <div class="model-track">
+                        <div class="model-fill {{ m.verdict.lower() }}"
+                             data-width="{{ m.confidence }}"></div>
+                    </div>
+                    <span class="model-pct">{{ m.confidence }}%</span>
+                    <span class="model-verdict {{ m.verdict.lower() }}">{{ m.verdict }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom:24px;">
+        <div class="section-header-row">
+            <div>
+                <div class="section-label">KNN Recommender</div>
+                <h2 style="color:var(--text-primary);margin:0;font-size:18px;">Similar Foods</h2>
+            </div>
+            <span style="font-size:12px;color:var(--text-muted);">By nutritional similarity</span>
+        </div>
+        <div class="recs-grid">
+            {% for food in result.recommendations %}
+            <div class="rec-card">
+                <div class="rec-top">
+                    <div class="rec-name">{{ food.name }}</div>
+                    <div class="sim-badge">{{ food.similarity }}% match</div>
+                </div>
+                <div class="rec-stats">
+                    <div class="rec-stat"><span>Cal</span><strong>{{ food.calories }} kcal</strong></div>
+                    <div class="rec-stat"><span>Protein</span><strong>{{ food.protein }}g</strong></div>
+                    <div class="rec-stat"><span>Sugar</span><strong>{{ food.sugar }}g</strong></div>
+                    <div class="rec-stat"><span>Sat. Fat</span><strong>{{ food.saturated_fat }}g</strong></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('analyze') }}" class="btn btn-primary">Analyze Another</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">View Dashboard</a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+window.addEventListener('load', () => {
+    document.querySelectorAll('[data-width]').forEach(el => {
+        requestAnimationFrame(() => { el.style.width = el.dataset.width + '%'; });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('macroChart');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Protein (g)', 'Carbs (g)', 'Fat (g)'],
+            datasets: [{
+                data: [{{ result.nutrition.protein }}, {{ result.nutrition.carbs }}, {{ result.nutrition.fat }}],
+                backgroundColor: [
+                    'rgba(74, 222, 128, 0.8)', // Green
+                    'rgba(96, 165, 250, 0.8)', // Blue
+                    'rgba(248, 113, 113, 0.8)' // Red
+                ],
+                borderColor: [
+                    'rgba(74, 222, 128, 1)',
+                    'rgba(96, 165, 250, 1)',
+                    'rgba(248, 113, 113, 1)'
+                ],
+                borderWidth: 1,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#e2e8f0', font: { family: 'Inter', size: 12 } }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

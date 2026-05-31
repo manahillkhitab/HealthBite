@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HealthBite{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Live Analytics Dashboard</h1>
+        <p>Your food analysis history and confidence trends.</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon-wrap blue">📈</div>
+            <div>
+                <div class="stat-num" data-count="{{ stats.total_predictions }}">0</div>
+                <div class="stat-lbl">Total Analyzed</div>
+            </div>
+        </div>
+        <div class="stat-card healthy">
+            <div class="stat-icon-wrap green">🥗</div>
+            <div>
+                <div class="stat-num" data-count="{{ stats.healthy_count }}">0</div>
+                <div class="stat-lbl">Healthy Foods</div>
+            </div>
+        </div>
+        <div class="stat-card unhealthy">
+            <div class="stat-icon-wrap red">🍔</div>
+            <div>
+                <div class="stat-num" data-count="{{ stats.unhealthy_count }}">0</div>
+                <div class="stat-lbl">Unhealthy Foods</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-wrap yellow">🎯</div>
+            <div>
+                <div class="stat-num" data-count="{{ stats.average_confidence }}" data-suffix="%">0%</div>
+                <div class="stat-lbl">Avg Confidence</div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.total_predictions > 0 %}
+
+    <div class="chart-section">
+        <h2>Health Distribution</h2>
+        <div class="chart-wrap">
+            <canvas id="healthChart" width="260" height="260"></canvas>
+        </div>
+        <div class="chart-legend">
+            <div class="legend-item">
+                <span class="legend-dot healthy"></span>
+                Healthy — {{ stats.healthy_percentage }}%
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot unhealthy"></span>
+                Unhealthy — {{ stats.unhealthy_percentage }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <div class="history-header">
+            <h2>Recent Predictions</h2>
+            <form method="POST" action="{{ url_for('clear_history') }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Clear all history?')">Clear History</button>
+            </form>
+        </div>
+        <div class="history-list">
+            {% for pred in stats.recent_predictions %}
+            <div class="history-item {{ pred.prediction.lower() }}">
+                <div class="history-name">{{ pred.food_name }}</div>
+                <div><span class="history-badge {{ pred.prediction.lower() }}">{{ pred.prediction }}</span></div>
+                <div class="history-conf">{{ pred.confidence }}%</div>
+                <div class="history-time">{{ pred.timestamp }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h2>No Analysis Yet</h2>
+        <p>Analyze your first food to see live stats and history here.</p>
+        <a href="{{ url_for('analyze') }}" class="btn btn-primary btn-lg">
+            Analyze Your First Food &rarr;
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function animateCount(el) {
+    const target = parseFloat(el.dataset.count) || 0;
+    const suffix = el.dataset.suffix || '';
+    const duration = 800;
+    const start = performance.now();
+    function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const val = target * p;
+        el.textContent = (Number.isInteger(target) ? Math.round(val) : val.toFixed(1)) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+document.querySelectorAll('.stat-num[data-count]').forEach(animateCount);
+
+{% if stats.total_predictions > 0 %}
+const ctx = document.getElementById('healthChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Healthy', 'Unhealthy'],
+        datasets: [{
+            data: [{{ stats.healthy_count }}, {{ stats.unhealthy_count }}],
+            backgroundColor: ['rgba(16,185,129,0.85)', 'rgba(244,63,94,0.85)'],
+            borderColor:     ['rgba(16,185,129,1)',    'rgba(244,63,94,1)'],
+            borderWidth: 2,
+            hoverOffset: 6,
+        }]
+    },
+    options: {
+        cutout: '70%',
+        animation: { duration: 800, easing: 'easeInOutQuart' },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} food${ctx.raw !== 1 ? 's' : ''}` },
+                backgroundColor: 'rgba(15,23,42,0.95)',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleColor: '#f0f4f8',
+                bodyColor:  '#94a3b8',
+                padding: 10,
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

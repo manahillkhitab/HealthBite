@@ -1,0 +1,18 @@
+# HealthBite
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+*.log
+data/raw/
+notebooks/__pycache__/
+static/images/
+.idea/
+.vscode/
+
+*.db
+*.sqlite
+healthbite.db

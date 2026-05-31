@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}HealthBite — AI Food Health Classifier{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                96.7% Ensemble Accuracy &mdash; USDA Dataset
+            </div>
+
+            <h1 class="hero-title">Know What You <span class="accent">Eat</span></h1>
+
+            <p class="hero-sub">
+                Enter any food's nutrition data and our AI ensemble instantly tells you if it's healthy — plus 5 similar alternatives.
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ url_for('analyze') }}" class="btn btn-primary btn-lg" id="analyze-btn">
+                    Analyze a Food &rarr;
+                    <div class="spinner"></div>
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <div class="stat-number">96.7%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">2,500+</div>
+                    <div class="stat-label">Foods in DB</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">AI Models</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Recommendations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>Ensemble Classifier</h3>
+                <p>KNN, SVM &amp; Naive Bayes vote together for accuracy.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Smart Recommender</h3>
+                <p>Finds 5 nutritionally similar foods from 2,500+ items.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Live Analytics</h3>
+                <p>Tracks every analysis with live stats and history.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌿</div>
+                <h3>WHO Standards</h3>
+                <p>Health scores based on WHO nutritional guidelines.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Simple Process</span>
+            <h2 class="section-title">Three steps to know your food</h2>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Enter Nutrition</h3>
+                <p>Type in calories, protein, carbs, fat, sugar and sodium.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>AI Analysis</h3>
+                <p>Three ML models each vote. Ensemble gives final result.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Get Results</h3>
+                <p>See health label, model confidence, and 5 recommendations.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('analyze-btn').addEventListener('click', function() {
+    this.querySelector('.spinner').style.display = 'inline-block';
+    this.classList.add('disabled');
+});
+</script>
+{% endblock %}
