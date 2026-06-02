@@ -4,10 +4,6 @@
 [![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![Build Status](https://github.com/manahillkhitab/HealthBite/actions/workflows/ci.yml/badge.svg)](https://github.com/manahillkhitab/HealthBite/actions)
 
-## 📸 Preview
-
-![HealthBite App Screenshot](docs/image.png)
-
 HealthBite is an AI-powered food health classification and smart nutrition recommendation web application. It leverages an ensemble machine learning approach (KNN, SVM, Naive Bayes) to classify whether a given food item (based on its nutritional macro values per 100g) is generally "Healthy" or "Unhealthy", while also offering confidence intervals and similar food recommendations.
 
 ## Features

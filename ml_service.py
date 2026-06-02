@@ -40,10 +40,13 @@ try:
     recommender_scaler= _load('models/recommender_scaler.pkl')
     food_names        = _load('models/food_names.pkl')
     food_features     = _load('models/food_features.pkl')
+    MODELS_LOADED = True
     print("[OK] ML Service: all models loaded successfully")
 except Exception as e:
-    print(f"[ERROR] ML Service failed to load models: {e}")
-    raise
+    classifier = scaler = recommender = recommender_scaler = None
+    food_names = food_features = None
+    MODELS_LOADED = False
+    print(f"[WARN] ML Service: models not loaded ({e}). Prediction endpoints unavailable.")
 
 
 # ── Public API ────────────────────────────────────────────────────
